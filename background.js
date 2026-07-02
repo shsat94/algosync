@@ -41,64 +41,72 @@ chrome.runtime.onMessage.addListener(async (message) => {
 
                 const encoded = base64Encode(payload.code);
 
-                const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+                await uploadFile(
+                    `${folder}/solution.${ext}`,
+                    payload.code,
+                    `Solved ${payload.slug}`,
+                    token,
+                    owner,
+                    repo
+                );
 
+                const metadata = {
 
-                const existing = await fetch(url, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: "application/vnd.github+json"
-                    }
-                });
+                    title: payload.slug
+                        .split("-")
+                        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(" "),
 
-                let sha = null;
+                    slug: payload.slug,
 
-                if (existing.ok) {
+                    questionId: payload.questionId,
 
-                    const file = await existing.json();
+                    language: payload.language,
 
-                    sha = file.sha;
+                    runtime: payload.runtime,
 
-                    console.log("Existing file found.");
+                    memory: payload.memory,
 
-                }
+                    submissionId: payload.submissionId,
 
-                const body = {
-                    message: `Solved ${payload.slug}`,
-                    content: encoded
+                    solvedAt: payload.submittedAt,
+
+                    url: payload.url
+
                 };
 
-                if (sha)
-                    body.sha = sha;
+                await uploadFile(
+                    `${folder}/metadata.json`,
+                    JSON.stringify(metadata, null, 4),
+                    `Updated metadata for ${payload.slug}`,
+                    token,
+                    owner,
+                    repo
+                );
 
-                const upload = await fetch(url, {
+                const readme = `# ${metadata.title}
 
-                    method: "PUT",
+                ## Information
 
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: "application/vnd.github+json"
-                    },
+                - Problem ID: ${metadata.questionId}
+                - Language: ${metadata.language}
+                - Runtime: ${metadata.runtime}
+                - Memory: ${metadata.memory}
+                - Solved At: ${metadata.solvedAt}
 
-                    body: JSON.stringify(body)
+                ## LeetCode
 
-                });
+                ${metadata.url}
+                `;
 
-                const result = await upload.json();
-
-                console.log(result);
-
-                if (upload.ok) {
-
-                    console.log("✅ Uploaded Successfully");
-
-                }
-                else {
-
-                    console.error(result);
-
-                }
-
+                await uploadFile(
+                    `${folder}/README.md`,
+                    readme,
+                    `Updated README for ${payload.slug}`,
+                    token,
+                    owner,
+                    repo
+                );
             }
             catch (err) {
 
@@ -120,3 +128,42 @@ function base64Encode(str) {
 
 }
 
+async function uploadFile(path, content, message, token, owner, repo) {
+
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+    // Check whether the file already exists
+    const existing = await fetch(url, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github+json"
+        }
+    });
+
+    let sha = null;
+
+    if (existing.ok) {
+        const file = await existing.json();
+        sha = file.sha;
+    }
+
+    const body = {
+        message,
+        content: base64Encode(content)
+    };
+
+    if (sha) {
+        body.sha = sha;
+    }
+
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github+json"
+        },
+        body: JSON.stringify(body)
+    });
+
+    return await response.json();
+}
