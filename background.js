@@ -1,3 +1,5 @@
+let latestSubmission = null;
+
 const storage = (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync)
     ? {
         get: (keys) => new Promise((resolve) => chrome.storage.sync.get(keys, resolve)),
@@ -35,122 +37,135 @@ const githubPipeline = async (token, owner, repo, message) => {
     try {
 
         const payload = message.payload;
+        latestSubmission = message.payload;
 
-        const extensionMap = {
-            java: "java",
-            cpp: "cpp",
-            c: "c",
-            python: "py",
-            python3: "py",
-            javascript: "js",
-            typescript: "ts",
-            csharp: "cs",
-            go: "go",
-            kotlin: "kt",
-            rust: "rs"
-        };
+        chrome.windows.create({
 
-        const ext = extensionMap[payload.language] || "txt";
+            url: chrome.runtime.getURL("review/review.html"),
 
-        const folder =
-            payload.questionId.padStart(4, "0") +
-            "-" +
-            payload.slug;
+            type: "popup",
 
-        const parentFolder = 'Solutions';
+            width: 800,
 
-        const path = `${folder}/solution.${ext}`;
+            height: 850
 
-        const encoded = base64Encode(payload.code);
+        });
 
-        await uploadFile(
-            `${parentFolder}/${folder}/solution.${ext}`,
-            payload.code,
-            `Solved ${payload.slug}`,
-            token,
-            owner,
-            repo
-        );
+//         const extensionMap = {
+//             java: "java",
+//             cpp: "cpp",
+//             c: "c",
+//             python: "py",
+//             python3: "py",
+//             javascript: "js",
+//             typescript: "ts",
+//             csharp: "cs",
+//             go: "go",
+//             kotlin: "kt",
+//             rust: "rs"
+//         };
 
-        const metadata = {
+//         const ext = extensionMap[payload.language] || "txt";
 
-            title: payload.slug
-                .split("-")
-                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-                .join(" "),
+//         const folder =
+//             payload.questionId.padStart(4, "0") +
+//             "-" +
+//             payload.slug;
 
-            slug: payload.slug,
+//         const parentFolder = 'Solutions';
 
-            questionId: payload.questionId,
+//         const path = `${folder}/solution.${ext}`;
 
-            language: payload.language,
+//         const encoded = base64Encode(payload.code);
 
-            runtime: payload.runtime,
+//         await uploadFile(
+//             `${parentFolder}/${folder}/solution.${ext}`,
+//             payload.code,
+//             `Solved ${payload.slug}`,
+//             token,
+//             owner,
+//             repo
+//         );
 
-            memory: payload.memory,
+//         const metadata = {
 
-            submissionId: payload.submissionId,
+//             title: payload.slug
+//                 .split("-")
+//                 .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+//                 .join(" "),
 
-            solvedAt: payload.submittedAt,
+//             slug: payload.slug,
 
-            url: payload.url
+//             questionId: payload.questionId,
 
-        };
+//             language: payload.language,
 
-        await uploadFile(
-            `${parentFolder}/${folder}/metadata.json`,
-            JSON.stringify(metadata, null, 4),
-            `Updated metadata for ${payload.slug}`,
-            token,
-            owner,
-            repo
-        );
+//             runtime: payload.runtime,
 
-        const readme = `# ${metadata.title}
+//             memory: payload.memory,
 
-## Information
+//             submissionId: payload.submissionId,
 
-- Problem ID: ${metadata.questionId}
-- Language: ${metadata.language}
-- Runtime: ${metadata.runtime}
-- Memory: ${metadata.memory}
-- Solved At: ${metadata.solvedAt}
+//             solvedAt: payload.submittedAt,
 
-## LeetCode
+//             url: payload.url
 
-${metadata.url}
-`;
+//         };
 
-        await uploadFile(
-            `${parentFolder}/${folder}/README.md`,
-            readme,
-            `Updated README for ${payload.slug}`,
-            token,
-            owner,
-            repo
-        );
+//         await uploadFile(
+//             `${parentFolder}/${folder}/metadata.json`,
+//             JSON.stringify(metadata, null, 4),
+//             `Updated metadata for ${payload.slug}`,
+//             token,
+//             owner,
+//             repo
+//         );
 
-        function generateMainReadme() {
+//         const readme = `# ${metadata.title}
 
-            return `# 🚀 LeetCode Solutions
+// ## Information
 
-## Statistics
+// - Problem ID: ${metadata.questionId}
+// - Language: ${metadata.language}
+// - Runtime: ${metadata.runtime}
+// - Memory: ${metadata.memory}
+// - Solved At: ${metadata.solvedAt}
 
-- Last Updated: ${new Date().toLocaleString()}
+// ## LeetCode
 
-Generated automatically using my Chrome Extension.
-`;
+// ${metadata.url}
+// `;
 
-        }
+//         await uploadFile(
+//             `${parentFolder}/${folder}/README.md`,
+//             readme,
+//             `Updated README for ${payload.slug}`,
+//             token,
+//             owner,
+//             repo
+//         );
 
-        await uploadFile(
-            "README.md",
-            generateMainReadme(),
-            "Updated main README",
-            token,
-            owner,
-            repo
-        );
+//         function generateMainReadme() {
+
+//             return `# 🚀 LeetCode Solutions
+
+// ## Statistics
+
+// - Last Updated: ${new Date().toLocaleString()}
+
+// Generated automatically using my Chrome Extension.
+// `;
+
+//         }
+
+//         await uploadFile(
+//             "README.md",
+//             generateMainReadme(),
+//             "Updated main README",
+//             token,
+//             owner,
+//             repo
+//         );
 
     }
     catch (err) {
@@ -209,3 +224,13 @@ async function uploadFile(path, content, message, token, owner, repo) {
 
     return await response.json();
 }
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
+
+    if(message.type==="GET_SUBMISSION"){
+
+        sendResponse(latestSubmission);
+
+    }
+
+});

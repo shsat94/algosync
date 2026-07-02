@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Algo Sync Review</title>
+
+    <link rel="stylesheet" href="review.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🚀 Algo Sync</h1>
+
+    <h2 id="problemName">Loading...</h2>
+
+    <p id="language"></p>
+
+    <div class="info">
+
+        <div>
+            <strong>Runtime</strong>
+            <p id="runtime"></p>
+        </div>
+
+        <div>
+            <strong>Memory</strong>
+            <p id="memory"></p>
+        </div>
+
+    </div>
+
+    <hr>
+
+    <label>Your Findings</label>
+
+    <textarea
+        id="notes"
+        placeholder="What did you learn from this problem?"
+    ></textarea>
+
+    <label>Time Complexity</label>
+
+    <input
+        id="time"
+        placeholder="O(n)"
+    >
+
+    <label>Space Complexity</label>
+
+    <input
+        id="space"
+        placeholder="O(1)"
+    >
+
+    <label>Flowcharts / Notes</label>
+
+    <input
+        id="images"
+        type="file"
+        multiple
+        accept="image/*"
+    >
+
+    <button id="upload">
+        Upload
+    </button>
+
+</div>
+
+<script src="review.js"></script>
+
+</body>
+
+</html>
