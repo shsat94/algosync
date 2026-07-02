@@ -108,18 +108,18 @@ const githubPipeline = async (token, owner, repo, message) => {
 
         const readme = `# ${metadata.title}
 
-                ## Information
+## Information
 
-                - Problem ID: ${metadata.questionId}
-                - Language: ${metadata.language}
-                - Runtime: ${metadata.runtime}
-                - Memory: ${metadata.memory}
-                - Solved At: ${metadata.solvedAt}
+- Problem ID: ${metadata.questionId}
+- Language: ${metadata.language}
+- Runtime: ${metadata.runtime}
+- Memory: ${metadata.memory}
+- Solved At: ${metadata.solvedAt}
 
-                ## LeetCode
+## LeetCode
 
-                ${metadata.url}
-                `;
+${metadata.url}
+`;
 
         await uploadFile(
             `${parentFolder}/${folder}/README.md`,
@@ -134,12 +134,12 @@ const githubPipeline = async (token, owner, repo, message) => {
 
             return `# 🚀 LeetCode Solutions
 
-                    ## Statistics
+## Statistics
 
-                    - Last Updated: ${new Date().toLocaleString()}
+- Last Updated: ${new Date().toLocaleString()}
 
-                    Generated automatically using my Chrome Extension.
-                    `;
+Generated automatically using my Chrome Extension.
+`;
 
         }
 
