@@ -19,12 +19,19 @@ chrome.runtime.onMessage.addListener(async (message) => {
 
     if (message.type !== "LEETCODE_SUBMISSION")
         return;
+    latestSubmission = message.payload;
 
-    const result = await storage.get(STORAGE_KEY);
-    console.log(result);
-    const saved = result[STORAGE_KEY];
-    githubPipeline(saved.token, saved.owner, saved.repo, message);
+    chrome.windows.create({
 
+        url: chrome.runtime.getURL("review/review.html"),
+
+        type: "popup",
+
+        width: 800,
+
+        height: 850
+
+    });
 });
 
 const githubPipeline = async (token, owner, repo, message) => {
@@ -36,136 +43,126 @@ const githubPipeline = async (token, owner, repo, message) => {
 
     try {
 
-        const payload = message.payload;
-        latestSubmission = message.payload;
+        const payload = message.submission;
+        console.log(payload);
 
-        chrome.windows.create({
+        const extensionMap = {
+            java: "java",
+            cpp: "cpp",
+            c: "c",
+            python: "py",
+            python3: "py",
+            javascript: "js",
+            typescript: "ts",
+            csharp: "cs",
+            go: "go",
+            kotlin: "kt",
+            rust: "rs"
+        };
 
-            url: chrome.runtime.getURL("review/review.html"),
+        const ext = extensionMap[payload.language] || "txt";
 
-            type: "popup",
+        const folder =
+            payload.questionId.padStart(4, "0") +
+            "-" +
+            payload.slug;
 
-            width: 800,
+        const parentFolder = 'Solutions';
 
-            height: 850
+        const path = `${folder}/solution.${ext}`;
 
-        });
+        const encoded = base64Encode(payload.code);
 
-//         const extensionMap = {
-//             java: "java",
-//             cpp: "cpp",
-//             c: "c",
-//             python: "py",
-//             python3: "py",
-//             javascript: "js",
-//             typescript: "ts",
-//             csharp: "cs",
-//             go: "go",
-//             kotlin: "kt",
-//             rust: "rs"
-//         };
+        await uploadFile(
+            `${parentFolder}/${folder}/solution.${ext}`,
+            payload.code,
+            `Solved ${payload.slug}`,
+            token,
+            owner,
+            repo
+        );
 
-//         const ext = extensionMap[payload.language] || "txt";
+        const metadata = {
 
-//         const folder =
-//             payload.questionId.padStart(4, "0") +
-//             "-" +
-//             payload.slug;
+            title: payload.slug
+                .split("-")
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(" "),
 
-//         const parentFolder = 'Solutions';
+            slug: payload.slug,
 
-//         const path = `${folder}/solution.${ext}`;
+            questionId: payload.questionId,
 
-//         const encoded = base64Encode(payload.code);
+            language: payload.language,
 
-//         await uploadFile(
-//             `${parentFolder}/${folder}/solution.${ext}`,
-//             payload.code,
-//             `Solved ${payload.slug}`,
-//             token,
-//             owner,
-//             repo
-//         );
+            runtime: payload.runtime,
 
-//         const metadata = {
+            memory: payload.memory,
 
-//             title: payload.slug
-//                 .split("-")
-//                 .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-//                 .join(" "),
+            submissionId: payload.submissionId,
 
-//             slug: payload.slug,
+            solvedAt: payload.submittedAt,
 
-//             questionId: payload.questionId,
+            url: payload.url
 
-//             language: payload.language,
+        };
 
-//             runtime: payload.runtime,
+        await uploadFile(
+            `${parentFolder}/${folder}/metadata.json`,
+            JSON.stringify(metadata, null, 4),
+            `Updated metadata for ${payload.slug}`,
+            token,
+            owner,
+            repo
+        );
 
-//             memory: payload.memory,
+        const readme = `# ${metadata.title}
 
-//             submissionId: payload.submissionId,
+        ## Information
 
-//             solvedAt: payload.submittedAt,
+        - Problem ID: ${metadata.questionId}
+        - Language: ${metadata.language}
+        - Runtime: ${metadata.runtime}
+        - Memory: ${metadata.memory}
+        - Solved At: ${metadata.solvedAt}
 
-//             url: payload.url
+        ## LeetCode
 
-//         };
+        ${metadata.url}
+        `;
 
-//         await uploadFile(
-//             `${parentFolder}/${folder}/metadata.json`,
-//             JSON.stringify(metadata, null, 4),
-//             `Updated metadata for ${payload.slug}`,
-//             token,
-//             owner,
-//             repo
-//         );
+        const updatedReadme = message.readme;
 
-//         const readme = `# ${metadata.title}
+        await uploadFile(
+            `${parentFolder}/${folder}/README.md`,
+            updatedReadme,
+            `Updated README for ${payload.slug}`,
+            token,
+            owner,
+            repo
+        );
 
-// ## Information
+        function generateMainReadme() {
 
-// - Problem ID: ${metadata.questionId}
-// - Language: ${metadata.language}
-// - Runtime: ${metadata.runtime}
-// - Memory: ${metadata.memory}
-// - Solved At: ${metadata.solvedAt}
+            return `# 🚀 LeetCode Solutions
 
-// ## LeetCode
+        ## Statistics
 
-// ${metadata.url}
-// `;
+        - Last Updated: ${new Date().toLocaleString()}
 
-//         await uploadFile(
-//             `${parentFolder}/${folder}/README.md`,
-//             readme,
-//             `Updated README for ${payload.slug}`,
-//             token,
-//             owner,
-//             repo
-//         );
+        Generated automatically using my Chrome Extension.
+        `;
 
-//         function generateMainReadme() {
+        }
 
-//             return `# 🚀 LeetCode Solutions
-
-// ## Statistics
-
-// - Last Updated: ${new Date().toLocaleString()}
-
-// Generated automatically using my Chrome Extension.
-// `;
-
-//         }
-
-//         await uploadFile(
-//             "README.md",
-//             generateMainReadme(),
-//             "Updated main README",
-//             token,
-//             owner,
-//             repo
-//         );
+        await uploadFile(
+            "README.md",
+            generateMainReadme(),
+            "Updated main README",
+            token,
+            owner,
+            repo
+        );
 
     }
     catch (err) {
@@ -175,6 +172,20 @@ const githubPipeline = async (token, owner, repo, message) => {
     }
 
 };
+
+
+chrome.runtime.onMessage.addListener(async (message) => {
+
+    if (message.type !== "UPLOAD_REVIEW")
+        return;
+
+    const result = await storage.get(STORAGE_KEY);
+    console.log(result);
+    const saved = result[STORAGE_KEY];
+    githubPipeline(saved.token, saved.owner, saved.repo, message);
+    window.close();
+
+});
 
 function base64Encode(str) {
 
@@ -225,9 +236,9 @@ async function uploadFile(path, content, message, token, owner, repo) {
     return await response.json();
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse)=>{
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
-    if(message.type==="GET_SUBMISSION"){
+    if (message.type === "GET_SUBMISSION") {
 
         sendResponse(latestSubmission);
 

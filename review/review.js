@@ -1,55 +1,102 @@
+let submission = null;
+
 chrome.runtime.sendMessage({
-
     type: "GET_SUBMISSION"
+}, (data) => {
 
-}, (submission) => {
+    submission = data;
 
-    if (!submission) {
+    document.getElementById("problemName").innerText =
+        formatTitle(submission.slug);
 
-        return;
+    document.getElementById("language").innerText =
+        submission.language;
 
-    }
+    document.getElementById("runtime").innerText =
+        submission.runtime;
 
-    document.getElementById("problemName").innerText = formatTitle(submission.slug);
-
-    document.getElementById("language").innerText = submission.language;
-
-    document.getElementById("runtime").innerText = submission.runtime;
-
-    document.getElementById("memory").innerText = submission.memory;
+    document.getElementById("memory").innerText =
+        submission.memory;
 
 });
 
 
-document
-    .getElementById("upload")
-    .addEventListener("click", () => {
+document.getElementById("upload").addEventListener("click", async () => {
 
-        const notes =
-            document.getElementById("notes").value;
+    const notes =
+        document.getElementById("notes").value;
 
-        const time =
-            document.getElementById("time").value;
+    const time =
+        document.getElementById("time").value;
 
-        const space =
-            document.getElementById("space").value;
+    const space =
+        document.getElementById("space").value;
 
-        const files =
-            document.getElementById("images").files;
+    const readme =
+        generateReadme(submission, notes, time, space);
 
-        console.log(notes);
+    chrome.runtime.sendMessage({
 
-        console.log(time);
+        type: "UPLOAD_REVIEW",
 
-        console.log(space);
+        submission,
 
-        console.log(files);
+        readme,
+
+        notes,
+
+        time,
+
+        space
 
     });
+    window.close();
+
+});
 
 function formatTitle(slug) {
     return slug
         .split("-")
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
+}
+
+function generateReadme(submission, notes, time, space) {
+
+    return `# ${formatTitle(submission.slug)}
+
+## Problem
+
+${submission.url}
+
+---
+
+## Solution
+
+**Language:** ${submission.language}
+
+**Runtime:** ${submission.runtime}
+
+**Memory:** ${submission.memory}
+
+---
+
+## Complexity
+
+| Type | Value |
+|------|-------|
+| Time | ${time} |
+| Space | ${space} |
+
+---
+
+## Notes
+
+${notes}
+
+---
+
+Generated automatically using Algo Sync.
+`;
+
 }
