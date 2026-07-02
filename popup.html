@@ -1,22 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AlgoSync</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="popup.css">
+</head>
 <body>
 
-<input id="token" placeholder="GitHub Token">
+<!-- Gooey filter definition (invisible, powers the liquid blob merge effect) -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="goo">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="blur" />
+      <feColorMatrix in="blur" mode="matrix"
+        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"
+        result="goo" />
+      <feBlend in="SourceGraphic" in2="goo" />
+    </filter>
+  </defs>
+</svg>
 
-<br><br>
+<div class="stage">
 
-<input id="owner" placeholder="GitHub Username">
+  <!-- Liquid blob layer -->
+  <div class="liquid-layer">
+    <div class="blob blob-a"></div>
+    <div class="blob blob-b"></div>
+    <div class="blob blob-c"></div>
+    <div class="blob blob-d"></div>
+  </div>
 
-<br><br>
+  <!-- Glass card -->
+  <main class="card" id="card">
 
-<input id="repo" placeholder="Repository Name">
+    <header class="card-head">
+      <div class="mark">
+        <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+          0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+          -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07
+          -1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12
+          0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82
+          .44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+          0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+      </div>
+      <div class="head-text">
+        <h1>Connect to GitHub</h1>
+        <p>Link a repository to sync your work</p>
+      </div>
+    </header>
 
-<br><br>
+    <form id="form" autocomplete="off">
 
-<button id="save">Save</button>
+      <label class="field">
+        <span class="field-label">Personal access token</span>
+        <input id="token" type="password" placeholder="ghp_••••••••••••••••" required>
+      </label>
+
+      <label class="field">
+        <span class="field-label">GitHub username</span>
+        <input id="owner" type="text" placeholder="octocat" required>
+      </label>
+
+      <label class="field">
+        <span class="field-label">Repository name</span>
+        <input id="repo" type="text" placeholder="my-project" required>
+      </label>
+
+      <button type="submit" id="save" class="save-btn">
+        <span class="btn-liquid"></span>
+        <span class="btn-content">
+          <svg class="icon-save" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/>
+            <path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/>
+          </svg>
+          <svg class="icon-check" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path class="check-path" d="M20 6 9 17l-5-5"/>
+          </svg>
+          <span class="btn-label">Save connection</span>
+        </span>
+      </button>
+
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+
+    </form>
+
+  </main>
+</div>
 
 <script src="popup.js"></script>
-
 </body>
 </html>

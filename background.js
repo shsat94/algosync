@@ -1,92 +1,112 @@
+const storage = (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync)
+    ? {
+        get: (keys) => new Promise((resolve) => chrome.storage.sync.get(keys, resolve)),
+        set: (obj) => new Promise((resolve) => chrome.storage.sync.set(obj, resolve)),
+    }
+    : (() => {
+        const mem = {};
+        return {
+            get: (keys) => Promise.resolve({ [keys]: mem[keys] }),
+            set: (obj) => { Object.assign(mem, obj); return Promise.resolve(); },
+        };
+    })();
+
+const STORAGE_KEY = 'githubConnection';
+
 chrome.runtime.onMessage.addListener(async (message) => {
 
     if (message.type !== "LEETCODE_SUBMISSION")
         return;
 
-    chrome.storage.sync.get(
-        ["token", "owner", "repo"],
-        async ({ token, owner, repo }) => {
+    const result = await storage.get(STORAGE_KEY);
+    console.log(result);
+    const saved = result[STORAGE_KEY];
+    githubPipeline(saved.token, saved.owner, saved.repo, message);
 
-            if (!token || !owner || !repo) {
-                console.error("GitHub credentials are missing.");
-                return;
-            }
+});
 
-            try {
+const githubPipeline = async (token, owner, repo, message) => {
 
-                const payload = message.payload;
+    if (!token || !owner || !repo) {
+        console.error("GitHub credentials are missing.");
+        return;
+    }
 
-                const extensionMap = {
-                    java: "java",
-                    cpp: "cpp",
-                    c: "c",
-                    python: "py",
-                    python3: "py",
-                    javascript: "js",
-                    typescript: "ts",
-                    csharp: "cs",
-                    go: "go",
-                    kotlin: "kt",
-                    rust: "rs"
-                };
+    try {
 
-                const ext = extensionMap[payload.language] || "txt";
+        const payload = message.payload;
 
-                const folder =
-                    payload.questionId.padStart(4, "0") +
-                    "-" +
-                    payload.slug;
+        const extensionMap = {
+            java: "java",
+            cpp: "cpp",
+            c: "c",
+            python: "py",
+            python3: "py",
+            javascript: "js",
+            typescript: "ts",
+            csharp: "cs",
+            go: "go",
+            kotlin: "kt",
+            rust: "rs"
+        };
 
-                const parentFolder = 'Solutions';
+        const ext = extensionMap[payload.language] || "txt";
 
-                const path = `${folder}/solution.${ext}`;
+        const folder =
+            payload.questionId.padStart(4, "0") +
+            "-" +
+            payload.slug;
 
-                const encoded = base64Encode(payload.code);
+        const parentFolder = 'Solutions';
 
-                await uploadFile(
-                    `${parentFolder}/${folder}/solution.${ext}`,
-                    payload.code,
-                    `Solved ${payload.slug}`,
-                    token,
-                    owner,
-                    repo
-                );
+        const path = `${folder}/solution.${ext}`;
 
-                const metadata = {
+        const encoded = base64Encode(payload.code);
 
-                    title: payload.slug
-                        .split("-")
-                        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-                        .join(" "),
+        await uploadFile(
+            `${parentFolder}/${folder}/solution.${ext}`,
+            payload.code,
+            `Solved ${payload.slug}`,
+            token,
+            owner,
+            repo
+        );
 
-                    slug: payload.slug,
+        const metadata = {
 
-                    questionId: payload.questionId,
+            title: payload.slug
+                .split("-")
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(" "),
 
-                    language: payload.language,
+            slug: payload.slug,
 
-                    runtime: payload.runtime,
+            questionId: payload.questionId,
 
-                    memory: payload.memory,
+            language: payload.language,
 
-                    submissionId: payload.submissionId,
+            runtime: payload.runtime,
 
-                    solvedAt: payload.submittedAt,
+            memory: payload.memory,
 
-                    url: payload.url
+            submissionId: payload.submissionId,
 
-                };
+            solvedAt: payload.submittedAt,
 
-                await uploadFile(
-                    `${parentFolder}/${folder}/metadata.json`,
-                    JSON.stringify(metadata, null, 4),
-                    `Updated metadata for ${payload.slug}`,
-                    token,
-                    owner,
-                    repo
-                );
+            url: payload.url
 
-                const readme = `# ${metadata.title}
+        };
+
+        await uploadFile(
+            `${parentFolder}/${folder}/metadata.json`,
+            JSON.stringify(metadata, null, 4),
+            `Updated metadata for ${payload.slug}`,
+            token,
+            owner,
+            repo
+        );
+
+        const readme = `# ${metadata.title}
 
                 ## Information
 
@@ -101,18 +121,18 @@ chrome.runtime.onMessage.addListener(async (message) => {
                 ${metadata.url}
                 `;
 
-                await uploadFile(
-                    `${parentFolder}/${folder}/README.md`,
-                    readme,
-                    `Updated README for ${payload.slug}`,
-                    token,
-                    owner,
-                    repo
-                );
+        await uploadFile(
+            `${parentFolder}/${folder}/README.md`,
+            readme,
+            `Updated README for ${payload.slug}`,
+            token,
+            owner,
+            repo
+        );
 
-                function generateMainReadme() {
+        function generateMainReadme() {
 
-                    return `# 🚀 LeetCode Solutions
+            return `# 🚀 LeetCode Solutions
 
                     ## Statistics
 
@@ -121,27 +141,25 @@ chrome.runtime.onMessage.addListener(async (message) => {
                     Generated automatically using my Chrome Extension.
                     `;
 
-                }
+        }
 
-                await uploadFile(
-                    "README.md",
-                    generateMainReadme(),
-                    "Updated main README",
-                    token,
-                    owner,
-                    repo
-                );
+        await uploadFile(
+            "README.md",
+            generateMainReadme(),
+            "Updated main README",
+            token,
+            owner,
+            repo
+        );
 
-            }
-            catch (err) {
+    }
+    catch (err) {
 
-                console.error(err);
+        console.error(err);
 
-            }
+    }
 
-        });
-
-});
+};
 
 function base64Encode(str) {
 

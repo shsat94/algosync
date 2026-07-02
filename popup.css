@@ -1,0 +1,370 @@
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root {
+  --bg-deep:      #0A0E1C;
+  --bg-deep-2:    #0E1330;
+  --violet:       #8B7CFF;
+  --violet-soft:  #6F63E0;
+  --cyan:         #45E6D6;
+  --coral:        #FF7FA0;
+  --amber:        #FFC46B;
+
+  --glass-fill:   rgba(255, 255, 255, 0.06);
+  --glass-fill-2: rgba(255, 255, 255, 0.10);
+  --glass-edge:   rgba(255, 255, 255, 0.16);
+  --glass-edge-hi:rgba(255, 255, 255, 0.32);
+
+  --text-hi:      #F5F7FC;
+  --text-mid:     rgba(245, 247, 252, 0.68);
+  --text-low:     rgba(245, 247, 252, 0.40);
+
+  --radius-card:  28px;
+  --radius-field: 16px;
+  --radius-btn:   16px;
+
+  --ease-liquid:  cubic-bezier(.34, 1.56, .64, 1);
+  --ease-smooth:  cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 380px;
+  min-height: 560px;
+  overflow: hidden;
+  background: var(--bg-deep);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, sans-serif;
+  color: var(--text-hi);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.stage {
+  position: relative;
+  width: 380px;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background:
+    radial-gradient(120% 90% at 15% -10%, #1a2149 0%, transparent 55%),
+    radial-gradient(120% 90% at 100% 110%, #17123a 0%, transparent 55%),
+    var(--bg-deep);
+  isolation: isolate;
+}
+
+/* ============================================================
+   LIQUID BLOB BACKGROUND  (signature element)
+   ============================================================ */
+.liquid-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  filter: url(#goo) blur(0.5px);
+  opacity: 0.85;
+  z-index: 0;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  mix-blend-mode: screen;
+  filter: blur(2px);
+}
+
+.blob-a {
+  width: 260px; height: 260px;
+  left: -80px; top: -60px;
+  background: radial-gradient(circle at 35% 35%, var(--violet), var(--violet-soft) 65%, transparent 75%);
+  animation: drift-a 13s ease-in-out infinite;
+}
+.blob-b {
+  width: 220px; height: 220px;
+  right: -70px; top: 30px;
+  background: radial-gradient(circle at 40% 40%, var(--cyan), #1f8f83 70%, transparent 78%);
+  animation: drift-b 16s ease-in-out infinite;
+}
+.blob-c {
+  width: 200px; height: 200px;
+  left: 30px; bottom: -90px;
+  background: radial-gradient(circle at 45% 45%, var(--coral), #a1436a 70%, transparent 78%);
+  animation: drift-c 15s ease-in-out infinite;
+}
+.blob-d {
+  width: 150px; height: 150px;
+  right: 10px; bottom: -50px;
+  background: radial-gradient(circle at 45% 45%, var(--amber), #b17a2e 70%, transparent 78%);
+  animation: drift-d 18s ease-in-out infinite;
+}
+
+@keyframes drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, 50px) scale(1.15); }
+  66%      { transform: translate(10px, 90px) scale(0.9); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%      { transform: translate(-50px, 60px) scale(0.88); }
+  70%      { transform: translate(-20px, 20px) scale(1.1); }
+}
+@keyframes drift-c {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  45%      { transform: translate(35px, -60px) scale(1.12); }
+  75%      { transform: translate(70px, -20px) scale(0.92); }
+}
+@keyframes drift-d {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-30px, -40px) scale(1.2); }
+}
+
+/* faint grain-like overlay to keep the glass from looking too clean/plastic */
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.05), transparent 60%);
+  pointer-events: none;
+}
+
+/* ============================================================
+   GLASS CARD
+   ============================================================ */
+.card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 328px;
+  padding: 28px 26px 24px;
+  border-radius: var(--radius-card);
+  background: linear-gradient(160deg, var(--glass-fill-2), var(--glass-fill) 60%);
+  border: 1px solid var(--glass-edge);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow:
+    0 30px 60px -20px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 var(--glass-edge-hi),
+    inset 0 0 40px rgba(255, 255, 255, 0.03);
+  animation: card-in 0.6s var(--ease-liquid) both;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* subtle top sheen sweep, one-time */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.10) 45%, transparent 60%);
+  background-size: 220% 220%;
+  background-position: 120% 0%;
+  animation: sheen 2.6s ease-out 0.4s 1;
+  pointer-events: none;
+}
+@keyframes sheen {
+  to { background-position: -20% 100%; }
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.mark {
+  flex: 0 0 auto;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  color: var(--text-hi);
+  background: linear-gradient(150deg, rgba(139,124,255,0.55), rgba(69,230,214,0.35));
+  border: 1px solid var(--glass-edge-hi);
+  box-shadow: 0 8px 18px -8px rgba(139, 124, 255, 0.6);
+}
+
+.head-text h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text-hi);
+}
+.head-text p {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--text-mid);
+}
+
+/* ============================================================
+   FORM FIELDS
+   ============================================================ */
+form { display: flex; flex-direction: column; gap: 14px; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-mid);
+  padding-left: 2px;
+}
+
+.field input {
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--text-hi);
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-field);
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.25s var(--ease-smooth),
+              background 0.25s var(--ease-smooth),
+              box-shadow 0.25s var(--ease-smooth);
+}
+
+.field input::placeholder { color: var(--text-low); }
+
+.field input:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.field input:focus {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(139, 124, 255, 0.65);
+  box-shadow: 0 0 0 4px rgba(139, 124, 255, 0.16),
+              0 0 20px -4px rgba(69, 230, 214, 0.25);
+}
+
+/* ============================================================
+   SAVE BUTTON
+   ============================================================ */
+.save-btn {
+  position: relative;
+  margin-top: 6px;
+  padding: 13px 18px;
+  border: none;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  overflow: hidden;
+  font-family: inherit;
+  isolation: isolate;
+}
+
+.btn-liquid {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, var(--violet), var(--cyan) 55%, var(--coral));
+  background-size: 220% 220%;
+  animation: liquid-shift 6s ease-in-out infinite;
+  z-index: -1;
+}
+@keyframes liquid-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+.btn-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #0A0E1C;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.icon-check { display: none; }
+.check-path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+}
+
+.save-btn:hover .btn-liquid { filter: brightness(1.08); }
+
+.save-btn:active { transform: scale(0.98); }
+
+.save-btn:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+/* success state, toggled via JS */
+.save-btn.is-saved .icon-save { display: none; }
+.save-btn.is-saved .icon-check { display: inline-flex; }
+.save-btn.is-saved .check-path {
+  animation: draw-check 0.5s var(--ease-smooth) forwards;
+}
+.save-btn.is-saved .btn-liquid {
+  animation: liquid-shift 6s ease-in-out infinite, saved-pulse 0.5s var(--ease-smooth);
+}
+@keyframes draw-check {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes saved-pulse {
+  0%   { filter: brightness(1); }
+  40%  { filter: brightness(1.35); }
+  100% { filter: brightness(1); }
+}
+
+/* ripple on click */
+.save-btn .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  transform: scale(0);
+  animation: ripple-out 0.6s var(--ease-smooth) forwards;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes ripple-out {
+  to { transform: scale(1); opacity: 0; }
+}
+
+/* ============================================================
+   STATUS TEXT
+   ============================================================ */
+.status {
+  min-height: 16px;
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  text-align: center;
+  color: var(--cyan);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.3s var(--ease-smooth), transform 0.3s var(--ease-smooth);
+}
+.status.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.status.is-error { color: var(--coral); }
