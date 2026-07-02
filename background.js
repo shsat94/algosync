@@ -37,12 +37,14 @@ chrome.runtime.onMessage.addListener(async (message) => {
                     "-" +
                     payload.slug;
 
+                const parentFolder = 'Solutions';
+
                 const path = `${folder}/solution.${ext}`;
 
                 const encoded = base64Encode(payload.code);
 
                 await uploadFile(
-                    `${folder}/solution.${ext}`,
+                    `${parentFolder}/${folder}/solution.${ext}`,
                     payload.code,
                     `Solved ${payload.slug}`,
                     token,
@@ -76,7 +78,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
                 };
 
                 await uploadFile(
-                    `${folder}/metadata.json`,
+                    `${parentFolder}/${folder}/metadata.json`,
                     JSON.stringify(metadata, null, 4),
                     `Updated metadata for ${payload.slug}`,
                     token,
@@ -100,13 +102,36 @@ chrome.runtime.onMessage.addListener(async (message) => {
                 `;
 
                 await uploadFile(
-                    `${folder}/README.md`,
+                    `${parentFolder}/${folder}/README.md`,
                     readme,
                     `Updated README for ${payload.slug}`,
                     token,
                     owner,
                     repo
                 );
+
+                function generateMainReadme() {
+
+                    return `# 🚀 LeetCode Solutions
+
+                    ## Statistics
+
+                    - Last Updated: ${new Date().toLocaleString()}
+
+                    Generated automatically using my Chrome Extension.
+                    `;
+
+                }
+
+                await uploadFile(
+                    "README.md",
+                    generateMainReadme(),
+                    "Updated main README",
+                    token,
+                    owner,
+                    repo
+                );
+
             }
             catch (err) {
 
@@ -132,7 +157,6 @@ async function uploadFile(path, content, message, token, owner, repo) {
 
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
 
-    // Check whether the file already exists
     const existing = await fetch(url, {
         headers: {
             Authorization: `Bearer ${token}`,
