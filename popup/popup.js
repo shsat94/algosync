@@ -1,24 +1,3 @@
-// document.getElementById("save").addEventListener("click", () => {
-
-//     const token = document.getElementById("token").value.trim();
-//     const owner = document.getElementById("owner").value.trim();
-//     const repo = document.getElementById("repo").value.trim();
-
-//     chrome.storage.sync.set({
-//         token,
-//         owner,
-//         repo
-//     }, () => {
-//         alert("Saved Successfully!");
-//     });
-
-// });
-
-
-// popup.js
-// Handles loading/saving the GitHub connection fields and drives the
-// save button's liquid ripple + morph-to-check animation.
-
 const tokenInput = document.getElementById('token');
 const ownerInput = document.getElementById('owner');
 const repoInput  = document.getElementById('repo');
@@ -28,8 +7,6 @@ const statusEl   = document.getElementById('status');
 
 const STORAGE_KEY = 'githubConnection';
 
-// Use chrome.storage.sync when running as an extension; fall back to an
-// in-memory store so this popup also previews fine outside an extension host.
 const storage = (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync)
   ? {
       get: (keys) => new Promise((resolve) => chrome.storage.sync.get(keys, resolve)),
