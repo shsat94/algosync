@@ -7,7 +7,6 @@ window.fetch = async (...args) => {
     const url = resource.toString();
 
     if (url.includes("/submit/")) {
-        console.log("Detected Submit");
 
         try {
             if (config && config.body) {
@@ -25,8 +24,6 @@ window.fetch = async (...args) => {
                     submissionId: null,
                     submittedAt: new Date().toISOString()
                 };
-
-                console.log("Captured Submit Data:", submission);
             }
         } catch (err) {
             console.error("Submit Parse Error:", err);
@@ -35,7 +32,6 @@ window.fetch = async (...args) => {
 
     const response = await originalFetch(...args);
     if (url.includes("/check/")) {
-        console.log("✅ Detected Check");
 
         try {
             const clone = response.clone();
@@ -48,7 +44,6 @@ window.fetch = async (...args) => {
             submission.runtimePercentile = data.runtime_percentile;
             submission.memoryPercentile = data.memory_percentile;
             submission.finishedAt = data.task_finish_time;
-            console.log("Updated Submission:", submission);
             if (submission.accepted) {
                 window.dispatchEvent(
                     new CustomEvent("leetcodeSubmission", {

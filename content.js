@@ -9,12 +9,6 @@ if (match) {
         .split("-")
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
-
-    console.log({
-        title,
-        slug,
-        url
-    });
 }
 
 
@@ -25,7 +19,6 @@ document.addEventListener("click", (event) => {
     if (!button) return;
 
     if (button.innerText.trim() === "Submit") {
-        console.log("Submit button clicked 🚀");
     }
 
 });
@@ -39,8 +32,6 @@ script.onload = () => script.remove();
 (document.head || document.documentElement).appendChild(script);
 
 window.addEventListener("leetcodeSubmission", (event) => {
-
-    console.log("Received from Inject:", event.detail);
 
     chrome.runtime.sendMessage({
         type: "LEETCODE_SUBMISSION",

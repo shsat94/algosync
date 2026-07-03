@@ -44,7 +44,6 @@ const githubPipeline = async (token, owner, repo, message) => {
     try {
 
         const payload = message.submission;
-        console.log(payload);
 
         const extensionMap = {
             java: "java",
@@ -180,7 +179,6 @@ chrome.runtime.onMessage.addListener(async (message) => {
         return;
 
     const result = await storage.get(STORAGE_KEY);
-    console.log(result);
     const saved = result[STORAGE_KEY];
     githubPipeline(saved.token, saved.owner, saved.repo, message);
     window.close();
