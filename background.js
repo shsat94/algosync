@@ -37,7 +37,6 @@ chrome.runtime.onMessage.addListener(async (message) => {
 const githubPipeline = async (token, owner, repo, message) => {
 
     if (!token || !owner || !repo) {
-        console.error("GitHub credentials are missing.");
         return;
     }
 
@@ -165,8 +164,6 @@ const githubPipeline = async (token, owner, repo, message) => {
 
     }
     catch (err) {
-
-        console.error(err);
 
     }
 

@@ -1,4 +1,3 @@
-console.log("Extension Loaded");
 const url = window.location.href;
 const match = url.match(/problems\/([^/]+)/);
 

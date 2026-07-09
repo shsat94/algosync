@@ -26,7 +26,6 @@ window.fetch = async (...args) => {
                 };
             }
         } catch (err) {
-            console.error("Submit Parse Error:", err);
         }
     }
 
@@ -52,7 +51,6 @@ window.fetch = async (...args) => {
                 );
             }
         } catch (err) {
-            console.error("Check Parse Error:", err);
         }
     }
 
