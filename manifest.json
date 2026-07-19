@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "AlgoSync",
+    "name": "Leetnotes",
     "description": "Automatically sync accepted LeetCode solutions to GitHub.",
     "version": "1.0",
     "permissions": [

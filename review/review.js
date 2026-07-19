@@ -119,7 +119,7 @@ ${notes}
 
 ---
 
-Generated automatically using Algo Sync.
+Generated automatically using Leetnotes.
 `;
 
 }
